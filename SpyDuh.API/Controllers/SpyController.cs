@@ -68,7 +68,7 @@ namespace SpyDuh.API.Controllers
 
         }
 
-        [HttpPost]
+        [HttpPost("new-spy")]
          public IActionResult AddSpy(Spy newSpy)
         {
             if (string.IsNullOrEmpty(newSpy.Name))

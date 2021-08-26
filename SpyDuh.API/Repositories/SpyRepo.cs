@@ -74,6 +74,10 @@ namespace SpyDuh.API.Repositories
         internal void Add(Spy newSpy)
         {
             newSpy.Id = Guid.NewGuid();
+            newSpy.Friends.Clear();
+            newSpy.Enemies.Clear();
+            newSpy.Handlers.Clear();
+
 
             _spies.Add(newSpy);
         }
