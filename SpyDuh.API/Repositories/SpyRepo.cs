@@ -70,5 +70,16 @@ namespace SpyDuh.API.Repositories
             }
             return friendList;
         }
+
+        internal void Add(Spy newSpy)
+        {
+            newSpy.Id = Guid.NewGuid();
+            newSpy.Friends.Clear();
+            newSpy.Enemies.Clear();
+            newSpy.Handlers.Clear();
+
+
+            _spies.Add(newSpy);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SpyDuh.API.Models;
 using SpyDuh.API.Repositories;
 using System;
 using System.Collections.Generic;
@@ -65,6 +66,19 @@ namespace SpyDuh.API.Controllers
             // spy not found
             else return NotFound($"Spy with id: {spyGuid} not found");
 
+        }
+
+        [HttpPost("new-spy")]
+         public IActionResult AddSpy(Spy newSpy)
+        {
+            if (string.IsNullOrEmpty(newSpy.Name))
+            {
+                return BadRequest("Name needed");
+            }
+
+            _repo.Add(newSpy);
+
+            return Created("/api/spies/1", newSpy);
         }
     }
 }
