@@ -83,9 +83,14 @@ namespace SpyDuh.API.Repositories
             _spies.Add(newSpy);
         }
 
-        internal IEnumerable<Spy> GetBySkills(SpySkills skills)
+        internal IEnumerable<Spy> GetBySkills(string skill)
         {
-            return _spies.Where(spy => spy.Skills.Contains(skills));
+            SpySkills skillEnum;
+            if (Enum.TryParse(skill, out skillEnum))
+            {
+                return _spies.Where(spy => spy.Skills.Contains(skillEnum));
+            }
+            else return Enumerable.Empty<Spy>();
         }
 
     }
