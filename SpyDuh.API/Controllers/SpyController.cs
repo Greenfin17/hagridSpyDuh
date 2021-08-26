@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SpyDuh.API.Models;
 using SpyDuh.API.Repositories;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,12 @@ namespace SpyDuh.API.Controllers
         {
             return Ok(_repo.GetAll());
         }
-         
+
+        [HttpGet("skills/{skill}")]
+        public IEnumerable<Spy> GetSpiesBySkill(SpySkills skills)
+        {
+            return _repo.GetBySkills(skills);
+        }
+
     }
 }

@@ -31,9 +31,16 @@ namespace SpyDuh.API.Repositories
                 Handlers = new List<Guid> {}
             }
         };
+
         internal IEnumerable<Spy> GetAll()
         {
             return _spies;
         }
+
+        internal IEnumerable<Spy> GetBySkills(SpySkills skills)
+        {
+            return _spies.Where(spy => spy.Skills.Contains(skills));
+        }
+
     }
 }
