@@ -68,6 +68,19 @@ namespace SpyDuh.API.Controllers
 
         }
 
+        [HttpPost("new-spy")]
+         public IActionResult AddSpy(Spy newSpy)
+        {
+            if (string.IsNullOrEmpty(newSpy.Name))
+            {
+                return BadRequest("Name needed");
+            }
+
+            _repo.Add(newSpy);
+
+            return Created("/api/spies/1", newSpy);
+        }
+
         [HttpGet("skills/{skill}")]
         public IEnumerable<Spy> GetSpiesBySkill(SpySkills skills)
         {

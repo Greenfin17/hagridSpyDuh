@@ -72,6 +72,17 @@ namespace SpyDuh.API.Repositories
             return friendList;
         }
 
+        internal void Add(Spy newSpy)
+        {
+            newSpy.Id = Guid.NewGuid();
+            newSpy.Friends.Clear();
+            newSpy.Enemies.Clear();
+            newSpy.Handlers.Clear();
+
+
+            _spies.Add(newSpy);
+        }
+
         internal IEnumerable<Spy> GetBySkills(SpySkills skills)
         {
             return _spies.Where(spy => spy.Skills.Contains(skills));
