@@ -80,5 +80,12 @@ namespace SpyDuh.API.Controllers
 
             return Created("/api/spies/1", newSpy);
         }
+
+        [HttpGet("skills/{skill}")]
+        public IEnumerable<Spy> GetSpiesBySkill(string skill)
+        {
+            return _repo.GetBySkills(skill);
+        }
+
     }
 }
