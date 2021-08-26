@@ -24,9 +24,9 @@ namespace SpyDuh.API.Controllers
         public IActionResult GetAllSpies()
         {
             return Ok(_repo.GetAll());
-        } 
+        }
 
-         [HttpPost]
+        [HttpPost]
          public IActionResult AddSpy(Spy newSpy)
         {
             if (string.IsNullOrEmpty(newSpy.Name))
