@@ -35,5 +35,12 @@ namespace SpyDuh.API.Repositories
         {
             return _spies;
         }
+
+        internal void Add(Spy newSpy)
+        {
+            newSpy.Id = Guid.NewGuid();
+
+            _spies.Add(newSpy);
+        }
     }
 }
