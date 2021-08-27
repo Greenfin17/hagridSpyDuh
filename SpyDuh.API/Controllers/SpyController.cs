@@ -68,6 +68,24 @@ namespace SpyDuh.API.Controllers
 
         }
 
+        [HttpGet("{spyGuid}/Friends/Friends")]
+        public IActionResult FriendsFriends(Guid spyGuid)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            if (spyObj != null)
+            {
+                var response = _repo.GetFriendsFriends(spyGuid);
+                if (response.Count() == 0)
+                {
+                    // response is valid but empty
+                    return Ok("No friends (:\n");
+                }
+                else return Ok(response);
+            }
+            else return NotFound($"Spy with id: {spyGuid} not found");
+        }
+
+
         [HttpPost("new-spy")]
          public IActionResult AddSpy(Spy newSpy)
         {

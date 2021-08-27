@@ -72,6 +72,32 @@ namespace SpyDuh.API.Repositories
             return friendList;
         }
 
+        internal IEnumerable<Spy> GetFriendsFriends(Guid spyGuid)
+        {
+            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            var friendList = new List<Spy>();
+            if (spyObj != null && spyObj.Friends.Count > 0)
+            {
+                // loop through the list of friend Id's and retrieve the full friend objects
+                foreach (var friendGuid in spyObj.Friends)
+                {
+                    var tempList = new List<Spy>();
+                    var friendObj = _spies.FirstOrDefault(spy => spy.Id == friendGuid);
+                    if (friendObj != null)
+                    {
+                        tempList = ListFriends(friendGuid).ToList();
+                    }
+                    if (tempList != null)
+                    {
+                        tempList.ForEach(friend => friendList.Add(friend));
+                    }
+                }
+            }
+            return friendList;
+        }
+
+
+
         internal void Add(Spy newSpy)
         {
             newSpy.Id = Guid.NewGuid();
