@@ -68,6 +68,45 @@ namespace SpyDuh.API.Controllers
 
         }
 
+        [HttpPatch("{spyGuid}/AddEnemy/{enemyGuid}")]
+        public IActionResult AddEnemy(Guid spyGuid, Guid enemyGuid)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            var enemyObj = _repo.GetSpy(enemyGuid);
+            StringBuilder returnStr = new StringBuilder("");
+            if (spyObj != null && enemyObj != null)
+            {
+                if (!spyObj.Enemies.Contains(enemyGuid))
+                {
+                    spyObj.Enemies.Add(enemyGuid);
+                    return Ok($"Enemy with ID {enemyGuid} added.\n");
+                }
+                else return BadRequest($"Enemy with ID {enemyGuid} already in enemy list\n");
+            }
+            if (spyObj == null) returnStr.Append($"Spy with ID {spyGuid} not found\n");
+            if (enemyObj == null) returnStr.Append($"Friend with ID {spyGuid} not found\n");
+
+            return NotFound(returnStr.ToString());
+        }
+
+        [HttpGet("{spyGuid}/ListEnemies")]
+        public IActionResult ListEnemies(Guid spyGuid)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            if (spyObj != null)
+            {
+                var response = _repo.ListEnemies(spyGuid);
+                if (response.Count() == 0)
+                {
+                    return Ok("No enemies!\n");
+                }
+                else return Ok(response);
+            }
+            // spy not found
+            else return NotFound($"Spy with ID {spyGuid} not found");
+
+        }
+
         [HttpPost("new-spy")]
          public IActionResult AddSpy(Spy newSpy)
         {
