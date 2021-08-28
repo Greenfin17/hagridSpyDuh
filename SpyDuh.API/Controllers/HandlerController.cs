@@ -46,10 +46,12 @@ namespace SpyDuh.API.Controllers
         [HttpGet("{handlerGuid}/ListAgencySpies")]
         public IActionResult GetSpiesByAgencyHandler(Guid handlerGuid)
         {
-            if (_repo.IsHandler(handlerGuid)) {
-                return Ok(_spies.GetByHandler(handlerGuid));
+            StringBuilder message = new StringBuilder();
+            if(_spies.GetByHandler(handlerGuid, message))
+            {
+                return Ok(message.ToString());
             }
-            else return BadRequest($"Handler with Id: {handlerGuid} not found");
+            else return NotFound(message.ToString());
         }
     }
 }

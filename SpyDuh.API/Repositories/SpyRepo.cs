@@ -67,6 +67,8 @@ namespace SpyDuh.API.Repositories
             }
         };
 
+        HandlerRepo _handlers = new HandlerRepo();
+
         internal IEnumerable<Spy> GetAll()
         {
             return _spies;
@@ -163,12 +165,9 @@ namespace SpyDuh.API.Repositories
                     }
                     if (tempList != null && tempList.Count > 0)
                     {
-                        foreach(var friend in tempList)
-                        {
-                            // add the friend's friends to the list, excepting the original spy or a duplicate.
-                            if (friend.Id != spyGuid && !friendList.Contains(friend))
-                                friendList.Add(friend);
-                        }
+                        friendList.AddRange(from friend in tempList// add the friend's friends to the list, excepting the original spy or a duplicate.
+                                            where friend.Id != spyGuid && !friendList.Contains(friend)
+                                            select friend);
                     }
                 }
             }
@@ -193,9 +192,41 @@ namespace SpyDuh.API.Repositories
             }
             else return Enumerable.Empty<Spy>();
         }
-        internal IEnumerable<Spy> GetByHandler(Guid handlerGuid)
+
+        // Get spies associated with a handler
+        internal bool GetByHandler(Guid handlerGuid, StringBuilder returnStr)
         {
-            return _spies.Where(spy => spy.Handlers.Contains(handlerGuid));
+            // get the full handler object
+            var handlerObj = _handlers.GetHandler(handlerGuid);
+
+            // test for valid handler Guid
+            if (handlerObj != null)
+            {
+                // get spies associated with the handler, if any
+                var agencySpies = _spies.Where(spy => spy.Handlers.Contains(handlerGuid));
+                if (agencySpies.Count() > 0)
+                {
+                    // temporary list to store spy names
+                    var agencySpiesByName = new List<string>();
+                    // return message
+                    returnStr.Append($"Spies for {handlerObj.Name}:\n");
+                    // add names of spies to list
+                    agencySpiesByName.AddRange(from spy in agencySpies
+                                               select spy.Name);
+                    // copy list to return message
+                    agencySpiesByName.ForEach(spy => returnStr.Append($"{spy}\n"));
+                }
+                // no spies found
+                else returnStr.Append($"{handlerObj.Name} has no spies currently.");
+                return true;
+            }
+            else
+            {
+                // handler Id not found
+                returnStr.Append($"Handler with id {handlerGuid} not found");
+                return false;
+            }
         }
+
     }
 }
