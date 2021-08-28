@@ -130,9 +130,6 @@ namespace SpyDuh.API.Controllers
 
         public IActionResult ListSandS(Guid spyGuid)
         {
-            var spySkills = new List<SpySkills>();
-            var spyServices = new List<SpyServices>();
-
             return Ok(_repo.ListSkillsAndServices(spyGuid));
         }
 
