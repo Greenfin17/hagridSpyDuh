@@ -40,7 +40,7 @@ namespace SpyDuh.API.Controllers
                     spyObj.Friends.Add(friendGuid);
                     return Ok($"Friend {friendObj.Name} with Id {friendGuid} added.\n");
                 }
-                else return BadRequest($"Friend with Id: {friendGuid} already in friend list\n");
+                else return BadRequest($"Friend {friendObj.Name} with Id: {friendGuid} is already in the friend list\n");
             }
             if (spyObj == null) returnStr.Append($"Spy with id: {spyGuid} not found\n");
             if (friendObj == null) returnStr.Append($"Friend with id: {spyGuid} not found\n");
