@@ -38,9 +38,9 @@ namespace SpyDuh.API.Controllers
                 if (!spyObj.Friends.Contains(friendGuid))
                 {
                     spyObj.Friends.Add(friendGuid);
-                    return Ok($"Friend with Id {friendGuid} added.\n");
+                    return Ok($"Friend {friendObj.Name} with Id {friendGuid} added.\n");
                 }
-                else return BadRequest($"Friend with Id: {friendGuid} already in friend list\n");
+                else return BadRequest($"Friend {friendObj.Name} with Id: {friendGuid} is already in the friend list\n");
             }
             if (spyObj == null) returnStr.Append($"Spy with id: {spyGuid} not found\n");
             if (friendObj == null) returnStr.Append($"Friend with id: {spyGuid} not found\n");
@@ -67,6 +67,24 @@ namespace SpyDuh.API.Controllers
             else return NotFound($"Spy with id: {spyGuid} not found");
 
         }
+
+        [HttpGet("{spyGuid}/Friends/Friends")]
+        public IActionResult FriendsFriends(Guid spyGuid)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            if (spyObj != null)
+            {
+                var response = _repo.GetFriendsFriends(spyGuid);
+                if (response.Count() == 0)
+                {
+                    // response is valid but empty
+                    return Ok("No friends of friends(:\n");
+                }
+                else return Ok(response);
+            }
+            else return NotFound($"Spy with id: {spyGuid} not found");
+        }
+
 
         [HttpPatch("{spyGuid}/AddEnemy/{enemyGuid}")]
         public IActionResult AddEnemy(Guid spyGuid, Guid enemyGuid)

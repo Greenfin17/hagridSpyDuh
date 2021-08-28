@@ -10,32 +10,56 @@ namespace SpyDuh.API.Repositories
     {
         static List<Spy> _spies = new List<Spy>
         {
+
             new Spy
             {
                 Name = "James Bond",
-                Id = Guid.NewGuid(),
+                Id = new Guid("6b1d5e06-ff21-45d8-a66c-45788bbfd387"),
                 Skills = new List<SpySkills> {SpySkills.Alcoholic, SpySkills.Charisma, SpySkills.Seduction, SpySkills.DefensiveDriving},
                 Services = new List<SpyServices> {SpyServices.SaveTheWorld, SpyServices.IntelligenceGathering},
-                Friends = new List<Guid> {},
+                // Friends with Pierre and Vadim
+                Friends = new List<Guid> {new Guid("8120e025-e534-4ff7-8722-e09bb478281f"), new Guid("1359b3a6-dc47-4a9b-b50f-10ad8739653b")},
                 Enemies = new List<Guid> {},
                 Handlers = new List<Guid> {}
             },
              new Spy
             {
                 Name = "Pierre LaKlutz",
-                Id = Guid.NewGuid(),
+                Id = new Guid("8120e025-e534-4ff7-8722-e09bb478281f"),
                 Skills = new List<SpySkills> {SpySkills.Dancing, SpySkills.Disguises, SpySkills.Fencing,SpySkills.MicrosoftExcel},
                 Services = new List<SpyServices> {SpyServices.Dossier, SpyServices.Theft},
-                Friends = new List<Guid> {},
+                // Friends with Vadim and Whittaker
+                Friends = new List<Guid> {new Guid("57351a82-65f8-4518-a49a-c62a87134af3"), new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6")},
                 Enemies = new List<Guid> {},
                 Handlers = new List<Guid> {}
             },
              new Spy
             {
                 Name = "Vadim Kirpichenko",
-                Id = Guid.NewGuid(),
+                Id = new Guid("1359b3a6-dc47-4a9b-b50f-10ad8739653b"),
                 Skills = new List<SpySkills> {SpySkills.Alcoholic, SpySkills.DefensiveDriving, SpySkills.Hacker, SpySkills.Interrogation},
                 Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
+                // Friends with Jona
+                Friends = new List<Guid> {new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6")},
+                Enemies = new List<Guid> {},
+                Handlers = new List<Guid> {}
+            },
+             new Spy
+            {
+                Name = "Whittaker Chambers",
+                Id = new Guid("57351a82-65f8-4518-a49a-c62a87134af3"),
+                Skills = new List<SpySkills> {SpySkills.Languages, SpySkills.DefensiveDriving, SpySkills.Forgery, SpySkills.Interrogation},
+                Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
+                Friends = new List<Guid> {},
+                Enemies = new List<Guid> {},
+                Handlers = new List<Guid> {}
+            },
+             new Spy
+            {
+                Name = "Jona von Ustinov",
+                Id = new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6"),
+                Skills = new List<SpySkills> {SpySkills.Languages, SpySkills.Blackjack, SpySkills.Disguises, SpySkills.Interrogation},
+                Services = new List<SpyServices> {SpyServices.IntelligenceGathering},
                 Friends = new List<Guid> {},
                 Enemies = new List<Guid> {},
                 Handlers = new List<Guid> {}
@@ -120,6 +144,35 @@ namespace SpyDuh.API.Repositories
             return output.ToString();
         }
 
+        internal IEnumerable<Spy> GetFriendsFriends(Guid spyGuid)
+        {
+            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            var friendList = new List<Spy>();
+            if (spyObj != null && spyObj.Friends.Count > 0)
+            {
+                // loop through the list of friend Id's 
+                foreach (var friendGuid in spyObj.Friends)
+                {
+                    var tempList = new List<Spy>();
+                    var friendObj = _spies.FirstOrDefault(spy => spy.Id == friendGuid);
+                    if (friendObj != null)
+                    {
+                        // get the list of the friend's friends
+                        tempList = ListFriends(friendGuid).ToList();
+                    }
+                    if (tempList != null && tempList.Count > 0)
+                    {
+                        foreach(var friend in tempList)
+                        {
+                            // add the friend's friends to the list, excepting the original spy or a duplicate.
+                            if (friend.Id != spyGuid && !friendList.Contains(friend))
+                                friendList.Add(friend);
+                        }
+                    }
+                }
+            }
+            return friendList;
+        }
         internal void Add(Spy newSpy)
         {
             newSpy.Id = Guid.NewGuid();
