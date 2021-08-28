@@ -1,4 +1,5 @@
 ﻿using SpyDuh.API.Models;
+using SpyDuh.API.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace SpyDuh.API.Repositories
                 // Friends with Pierre and Vadim
                 Friends = new List<Guid> {new Guid("8120e025-e534-4ff7-8722-e09bb478281f"), new Guid("1359b3a6-dc47-4a9b-b50f-10ad8739653b")},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("626c99be-a979-4d56-ba8b-3353e4165145")}
             },
              new Spy
             {
@@ -31,7 +32,7 @@ namespace SpyDuh.API.Repositories
                 // Friends with Vadim and Whittaker
                 Friends = new List<Guid> {new Guid("57351a82-65f8-4518-a49a-c62a87134af3"), new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6")},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
             },
              new Spy
             {
@@ -42,7 +43,7 @@ namespace SpyDuh.API.Repositories
                 // Friends with Jona
                 Friends = new List<Guid> {new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6")},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("3732f2d5-3291-4494-8470-f6e7f719efde")}
             },
              new Spy
             {
@@ -52,7 +53,7 @@ namespace SpyDuh.API.Repositories
                 Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
                 Friends = new List<Guid> {},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
             },
              new Spy
             {
@@ -62,7 +63,7 @@ namespace SpyDuh.API.Repositories
                 Services = new List<SpyServices> {SpyServices.IntelligenceGathering},
                 Friends = new List<Guid> {},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
             }
         };
 
@@ -180,7 +181,6 @@ namespace SpyDuh.API.Repositories
             newSpy.Enemies.Clear();
             newSpy.Handlers.Clear();
 
-
             _spies.Add(newSpy);
         }
 
@@ -193,6 +193,5 @@ namespace SpyDuh.API.Repositories
             }
             else return Enumerable.Empty<Spy>();
         }
-
     }
 }
