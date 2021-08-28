@@ -126,5 +126,12 @@ namespace SpyDuh.API.Controllers
             return _repo.GetBySkills(skill);
         }
 
+        [HttpGet("{spyGuid}/skillsandservices")]
+
+        public IActionResult ListSandS(Guid spyGuid)
+        {
+            return Ok(_repo.ListSkillsAndServices(spyGuid));
+        }
+
     }
 }
