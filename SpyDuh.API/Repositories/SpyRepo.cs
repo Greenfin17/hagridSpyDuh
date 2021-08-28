@@ -90,17 +90,28 @@ namespace SpyDuh.API.Repositories
             return enemiesList;
         }
 
-        internal IEnumerable<SpySkills> ListSkillsAndServices(Guid spyGuid)
+        internal Boolean ListSkillsAndServices(Guid spyGuid, List<SpySkills> spySkills,
+                                                                    List<SpyServices> spyServices)
         {
             var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
             
-            if (spyObj != null && spyObj.Skills.Count > 0)
+            if (spyObj != null)
             {
-                return spyObj.Skills;
+                foreach ( var skill in spyObj.Skills)
+                {
+                    spySkills.Add(skill);
+                }
+
+                foreach (var service in spyObj.Services)
+                {
+                    spyServices.Add(service);
+                }
+
+                return true;
             }
             else
             {
-                return Enumerable.Empty<SpySkills>();
+                return false;
             }
         }
 
