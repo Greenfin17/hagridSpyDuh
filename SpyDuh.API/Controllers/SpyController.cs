@@ -150,6 +150,5 @@ namespace SpyDuh.API.Controllers
         {
             return Ok(_repo.ListSkillsAndServices(spyGuid));
         }
-
     }
 }

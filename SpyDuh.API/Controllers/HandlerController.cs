@@ -10,15 +10,17 @@ using System.Text;
 
 namespace SpyDuh.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/handler")]
     [ApiController]
     public class HandlerController : ControllerBase
     {
         HandlerRepo _repo;
+        SpyRepo _spies;
 
         public HandlerController()
         {
             _repo = new HandlerRepo();
+            _spies = new SpyRepo();
         }
 
         [HttpGet]
@@ -41,5 +43,13 @@ namespace SpyDuh.API.Controllers
             return Created("/api/handlers/1", newHandler);
         }
 
+        [HttpGet("{handlerGuid}/ListAgencySpies")]
+        public IActionResult GetSpiesByAgencyHandler(Guid handlerGuid)
+        {
+            if (_repo.IsHandler(handlerGuid)) {
+                return Ok(_spies.GetByHandler(handlerGuid));
+            }
+            else return BadRequest($"Handler with Id: {handlerGuid} not found");
+        }
     }
 }

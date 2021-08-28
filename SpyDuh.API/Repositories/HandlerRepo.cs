@@ -20,7 +20,7 @@ namespace SpyDuh.API.Repositories
              new Handler
             {
                 Name = "Q",
-                Id = new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197"),
+                Id = new Guid("a31e693e-1867-4c94-8445-5d4a76aaaf24"),
                 AgencyName = "Q's Agency",
             },
              new Handler
@@ -41,6 +41,15 @@ namespace SpyDuh.API.Repositories
             return _handlers.FirstOrDefault(handler => handler.Id == handlerGuid);
         }
 
+        internal bool IsHandler(Guid handlerGuid)
+        {
+            if (_handlers.FirstOrDefault(handler => handler.Id == handlerGuid) != null)
+                {
+                return true;
+            }
+            else return false;
+        }
+
         internal void Add(Handler newHandler)
         {
             newHandler.Id = Guid.NewGuid();
@@ -48,38 +57,6 @@ namespace SpyDuh.API.Repositories
         }
 
 
-        internal IEnumerable<Spy> GetSpiesByHandler(Guid handlerGuid)
-        {
-            var handlerObj = _handlers.FirstOrDefault(handler => handler.Id == handlerGuid);
-            var spyGuids = new List<Guid>();
-            var spyList = new List<Spy>();
-            if (handlerObj != null)
-            {
-                foreach(var spy in _spies)
-                {
-                    if (spy.Handlers.Contains(handlerGuid))
-                    {
-                        foreach(var handler in spy.Handlers)
-                        {
-                            spyGuids.Add(handler);
-                        }
-                    }
-                }
-                if (spyGuids.Count > 0)
-                {
-                    Spy tempSpy;
-                    foreach (var guid in spyGuids)
-                    {
-                        tempSpy = _spies.GetSpy(guid);
-                        if (tempSpy != null)
-                        {
-                            spyList.Add(tempSpy);
-                        }
-                    }
-                }
-            }
-            return spyList;
-        }
 
     }
 }
