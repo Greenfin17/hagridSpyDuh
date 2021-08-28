@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace SpyDuh.API.Repositories
 {
@@ -80,6 +80,54 @@ namespace SpyDuh.API.Repositories
                 }
             }
             return friendList;
+        }
+
+        internal IEnumerable<Spy> ListEnemies(Guid spyGuid)
+        {
+            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            var enemiesList = new List<Spy>();
+            if (spyObj != null && spyObj.Enemies.Count > 0)
+            {
+                foreach (var enemyGuid in spyObj.Enemies)
+                {
+                    var enemyObj = _spies.FirstOrDefault(spy => spy.Id == enemyGuid);
+                    if (enemyObj != null)
+                    {
+                        enemiesList.Add(enemyObj);
+                    }
+                }
+            }
+            return enemiesList;
+        }
+
+        internal String ListSkillsAndServices(Guid spyGuid)
+        {
+            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            StringBuilder output = new StringBuilder();
+            if (spyObj != null)
+            {
+                output.Append("Skills:\n");
+
+                foreach ( var skill in spyObj.Skills)
+                {
+                    output.Append(skill.ToString());
+                    output.Append('\n');
+                }
+
+                output.Append("\nServices:\n");
+                foreach (var service in spyObj.Services)
+                {
+                    output.Append(service.ToString());
+                    output.Append('\n');
+                }
+            }
+            else
+            {
+                output.Append("This spy is not in our database.");
+
+            }
+
+            return output.ToString();
         }
 
         internal IEnumerable<Spy> GetFriendsFriends(Guid spyGuid)
