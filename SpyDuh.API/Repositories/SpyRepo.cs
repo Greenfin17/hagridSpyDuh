@@ -78,18 +78,24 @@ namespace SpyDuh.API.Repositories
             var friendList = new List<Spy>();
             if (spyObj != null && spyObj.Friends.Count > 0)
             {
-                // loop through the list of friend Id's and retrieve the full friend objects
+                // loop through the list of friend Id's 
                 foreach (var friendGuid in spyObj.Friends)
                 {
                     var tempList = new List<Spy>();
                     var friendObj = _spies.FirstOrDefault(spy => spy.Id == friendGuid);
                     if (friendObj != null)
                     {
+                        // get the list of the friend's friends
                         tempList = ListFriends(friendGuid).ToList();
                     }
                     if (tempList != null)
                     {
-                        tempList.ForEach(friend => friendList.Add(friend));
+                        foreach(var friend in tempList)
+                        {
+                            // add the friend's friends to the list, excepting the original spy or a duplicate.
+                            if (friend.Id != spyGuid && !friendList.Contains(friend))
+                                friendList.Add(friend);
+                        }
                     }
                 }
             }
