@@ -162,12 +162,10 @@ namespace SpyDuh.API.Repositories
                     }
                     if (tempList != null && tempList.Count > 0)
                     {
-                        foreach(var friend in tempList)
-                        {
-                            // add the friend's friends to the list, excepting the original spy or a duplicate.
-                            if (friend.Id != spyGuid && !friendList.Contains(friend))
-                                friendList.Add(friend);
-                        }
+                        // add the friend's friends to the list, excepting the original spy or a duplicate.
+                        friendList.AddRange(from friend in tempList
+                                            where friend.Id != spyGuid && !friendList.Contains(friend)
+                                            select friend);
                     }
                 }
             }
