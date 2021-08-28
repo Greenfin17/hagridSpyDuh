@@ -38,7 +38,7 @@ namespace SpyDuh.API.Controllers
                 if (!spyObj.Friends.Contains(friendGuid))
                 {
                     spyObj.Friends.Add(friendGuid);
-                    return Ok($"Friend with Id {friendGuid} added.\n");
+                    return Ok($"Friend {friendObj.Name} with Id {friendGuid} added.\n");
                 }
                 else return BadRequest($"Friend with Id: {friendGuid} already in friend list\n");
             }
