@@ -133,10 +133,7 @@ namespace SpyDuh.API.Controllers
             var spySkills = new List<SpySkills>();
             var spyServices = new List<SpyServices>();
 
-            if (ListSkillsAndServices(spyGuid, spySkills, spyServices))
-            {
-                return Ok(spySkills);
-            }
+            return Ok(_repo.ListSkillsAndServices(spyGuid));
         }
 
     }
