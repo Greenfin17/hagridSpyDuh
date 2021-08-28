@@ -38,23 +38,11 @@ namespace SpyDuh.API.Repositories
         {
             return _handlers.FirstOrDefault(handler => handler.Id == handlerGuid);
         }
-
-        internal bool IsHandler(Guid handlerGuid)
-        {
-            if (_handlers.FirstOrDefault(handler => handler.Id == handlerGuid) != null)
-                {
-                return true;
-            }
-            else return false;
-        }
-
+        
         internal void Add(Handler newHandler)
         {
             newHandler.Id = Guid.NewGuid();
             _handlers.Add(newHandler);
         }
-
-
-
     }
 }
