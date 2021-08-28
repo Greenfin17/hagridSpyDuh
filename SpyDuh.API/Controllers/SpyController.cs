@@ -78,7 +78,7 @@ namespace SpyDuh.API.Controllers
                 if (response.Count() == 0)
                 {
                     // response is valid but empty
-                    return Ok("No friends (:\n");
+                    return Ok("No friends of friends(:\n");
                 }
                 else return Ok(response);
             }

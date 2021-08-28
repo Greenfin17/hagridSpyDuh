@@ -39,6 +39,16 @@ namespace SpyDuh.API.Repositories
                 Friends = new List<Guid> {},
                 Enemies = new List<Guid> {},
                 Handlers = new List<Guid> {}
+            },
+             new Spy
+            {
+                Name = "Whittaker Chambers",
+                Id = Guid.NewGuid(),
+                Skills = new List<SpySkills> {SpySkills.Languages, SpySkills.DefensiveDriving, SpySkills.Forgery, SpySkills.Interrogation},
+                Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
+                Friends = new List<Guid> {},
+                Enemies = new List<Guid> {},
+                Handlers = new List<Guid> {}
             }
         };
 
@@ -88,7 +98,7 @@ namespace SpyDuh.API.Repositories
                         // get the list of the friend's friends
                         tempList = ListFriends(friendGuid).ToList();
                     }
-                    if (tempList != null)
+                    if (tempList != null && tempList.Count > 0)
                     {
                         foreach(var friend in tempList)
                         {
@@ -101,9 +111,6 @@ namespace SpyDuh.API.Repositories
             }
             return friendList;
         }
-
-
-
         internal void Add(Spy newSpy)
         {
             newSpy.Id = Guid.NewGuid();
