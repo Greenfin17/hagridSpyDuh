@@ -20,7 +20,7 @@ namespace SpyDuh.API.Repositories
                 // Friends with Pierre and Vadim
                 Friends = new List<Guid> {new Guid("8120e025-e534-4ff7-8722-e09bb478281f"), new Guid("1359b3a6-dc47-4a9b-b50f-10ad8739653b")},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("626c99be-a979-4d56-ba8b-3353e4165145")}
             },
              new Spy
             {
@@ -31,7 +31,7 @@ namespace SpyDuh.API.Repositories
                 // Friends with Vadim and Whittaker
                 Friends = new List<Guid> {new Guid("57351a82-65f8-4518-a49a-c62a87134af3"), new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6")},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("626c99be-a979-4d56-ba8b-3353e4165145")}
             },
              new Spy
             {
@@ -40,9 +40,9 @@ namespace SpyDuh.API.Repositories
                 Skills = new List<SpySkills> {SpySkills.Alcoholic, SpySkills.DefensiveDriving, SpySkills.Hacker, SpySkills.Interrogation},
                 Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
                 // Friends with Jona
-                Friends = new List<Guid> {new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6")},
+                Friends = new List<Guid> {new Guid("626c99be-a979-4d56-ba8b-3353e4165145")},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("3732f2d5-3291-4494-8470-f6e7f719efde")}
             },
              new Spy
             {
@@ -52,7 +52,7 @@ namespace SpyDuh.API.Repositories
                 Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
                 Friends = new List<Guid> {},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
             },
              new Spy
             {
@@ -62,9 +62,11 @@ namespace SpyDuh.API.Repositories
                 Services = new List<SpyServices> {SpyServices.IntelligenceGathering},
                 Friends = new List<Guid> {},
                 Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {}
+                Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
             }
         };
+
+        HandlerRepo _handlers = new HandlerRepo();
 
         internal IEnumerable<Spy> GetAll()
         {
@@ -162,12 +164,9 @@ namespace SpyDuh.API.Repositories
                     }
                     if (tempList != null && tempList.Count > 0)
                     {
-                        foreach(var friend in tempList)
-                        {
-                            // add the friend's friends to the list, excepting the original spy or a duplicate.
-                            if (friend.Id != spyGuid && !friendList.Contains(friend))
-                                friendList.Add(friend);
-                        }
+                        friendList.AddRange(from friend in tempList// add the friend's friends to the list, excepting the original spy or a duplicate.
+                                            where friend.Id != spyGuid && !friendList.Contains(friend)
+                                            select friend);
                     }
                 }
             }
@@ -180,7 +179,6 @@ namespace SpyDuh.API.Repositories
             newSpy.Enemies.Clear();
             newSpy.Handlers.Clear();
 
-
             _spies.Add(newSpy);
         }
 
@@ -192,6 +190,41 @@ namespace SpyDuh.API.Repositories
                 return _spies.Where(spy => spy.Skills.Contains(skillEnum));
             }
             else return Enumerable.Empty<Spy>();
+        }
+
+        // Get spies associated with a handler
+        internal bool GetByHandler(Guid handlerGuid, StringBuilder returnStr)
+        {
+            // get the full handler object
+            var handlerObj = _handlers.GetHandler(handlerGuid);
+
+            // test for valid handler Guid
+            if (handlerObj != null)
+            {
+                // get spies associated with the handler, if any
+                var agencySpies = _spies.Where(spy => spy.Handlers.Contains(handlerGuid));
+                if (agencySpies.Count() > 0)
+                {
+                    // temporary list to store spy names
+                    var agencySpiesByName = new List<string>();
+                    // return message
+                    returnStr.Append($"Spies for {handlerObj.Name}:\n");
+                    // add names of spies to list
+                    agencySpiesByName.AddRange(from spy in agencySpies
+                                               select spy.Name);
+                    // copy list to return message
+                    agencySpiesByName.ForEach(spy => returnStr.Append($"{spy}\n"));
+                }
+                // no spies found
+                else returnStr.Append($"{handlerObj.Name} has no spies currently.");
+                return true;
+            }
+            else
+            {
+                // handler Id not found
+                returnStr.Append($"Handler with id {handlerGuid} not found");
+                return false;
+            }
         }
 
     }
