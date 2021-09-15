@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Data.SqlClient;
 
 namespace SpyDuh.API.Repositories
 {
@@ -68,8 +69,24 @@ namespace SpyDuh.API.Repositories
 
         HandlerRepo _handlers = new HandlerRepo();
 
+        const string _connectionString = "Server = localhost; Database = SpyDuh; Trusted_Connection = True";
         internal IEnumerable<Spy> GetAll()
         {
+            using var connection = new SqlConnection(_connectionString);
+            // connection must be opened, not open by default
+            connection.Open();
+
+            // ADO.NET SQL COMMANDS
+            // Tells SQL what we want to do.
+            var command = connection.CreateCommand();
+            command.CommandText = @"Select * 
+                                    From Birds";
+
+            // execute reader is for when we care about getting all the results of our query
+            var reader = command.ExecuteReader();
+            // reader can hold only one row of data at a time.
+
+            var birds = new List<Bird>();
             return _spies;
         }
 
