@@ -40,16 +40,18 @@ namespace SpyDuh.API.Controllers
             return NotFound(returnStr.ToString());
         }
 
-        [HttpPost("{spyBuid}/AddSkill/{spySkill}")]
+        [HttpPatch("{spyGuid}/AddSkill/{spySkill}")]
         public IActionResult AddSkill(Guid spyGuid, string spySkill)
         {
             var spyObj = _repo.GetSpy(spyGuid);
             StringBuilder returnStr = new StringBuilder("");
-            if (spyObj != null)
+            if (spyObj != null && _repo.AddSkill(spyObj, spySkill))
             {
-                return Ok(spyObj);
+                return Ok($"Added skill {spySkill} to spy {spyObj.Name}");
             }
-            returnStr.Append($"Spy with id: {spyGuid} not found\n");
+            else if (spyObj == null) returnStr.Append($"Spy with id: {spyGuid} not found\n");
+            else  returnStr.Append($"Spy skill {spySkill} not found\n");
+            
             return NotFound(returnStr.ToString());
 
         }

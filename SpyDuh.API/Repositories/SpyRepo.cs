@@ -111,7 +111,7 @@ namespace SpyDuh.API.Repositories
             else return null;
         }
 
-        internal bool AddSkill(Guid spyGuid, string spySkill)
+        internal bool AddSkill(Spy spy, string spySkill)
         {
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
@@ -120,9 +120,24 @@ namespace SpyDuh.API.Repositories
                                 Where Description = @spySkill";
             cmd.Parameters.AddWithValue("spySkill", spySkill);
             var reader = cmd.ExecuteReader();
-            if (reader.Read())
+            if (reader.Read() & spy != null && spy.Skills != null)
             {
-                return true;
+                var skillGuid = reader["Id"];
+                reader.Close();
+                cmd.CommandText = @"Select SpyId, SkillId from SpySkillRelationship
+                                    Where SpyId = @spyId and SkillId = @skillId";
+                cmd.Parameters.AddWithValue("spyId", spy.Id);
+                cmd.Parameters.AddWithValue("skillId", skillGuid);
+                var reader2 = cmd.ExecuteReader();
+                if (!reader2.Read())
+                {
+                    reader2.Close();
+                    cmd.CommandText = @"Insert into SpySkillRelationship (SpyId, SkillId)
+                                        output inserted.*
+	                                    Values(@spyId, @skillId)";
+                    var result = cmd.ExecuteNonQuery();
+                    if (result > 0) return true;
+                }
             }
             return false;
         }
