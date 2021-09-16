@@ -303,6 +303,7 @@ namespace SpyDuh.API.Repositories
                                 where S.Id = @spyId";
             cmd.Parameters.AddWithValue("spyId", spy.Id);
             var reader = cmd.ExecuteReader();
+            if (reader.HasRows) spy.Skills.Clear();
             while (reader.Read())
             {
                 spy.Skills.Add((SpySkills)reader["Enum"]);
@@ -321,6 +322,7 @@ namespace SpyDuh.API.Repositories
                                 where S.Id = @spyId";
             cmd.Parameters.AddWithValue("spyId", spy.Id);
             var reader = cmd.ExecuteReader();
+            if (reader.HasRows) spy.Services.Clear();
             while (reader.Read())
             {
                 spy.Services.Add((SpyServices)reader["Enum"]);
