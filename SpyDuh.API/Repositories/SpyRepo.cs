@@ -9,7 +9,7 @@ namespace SpyDuh.API.Repositories
 {
     public class SpyRepo
     {
-        static List<Spy> _spies = new List<Spy>
+      static List<Spy> _spies = new List<Spy>
         {
 
             new Spy
@@ -65,8 +65,7 @@ namespace SpyDuh.API.Repositories
                 Enemies = new List<Guid> {},
                 Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
             }
-        };
-
+        }; 
         HandlerRepo _handlers = new HandlerRepo();
 
         const string _connectionString = "Server = localhost; Database = SpyDuh; Trusted_Connection = True";
@@ -80,19 +79,52 @@ namespace SpyDuh.API.Repositories
             // Tells SQL what we want to do.
             var command = connection.CreateCommand();
             command.CommandText = @"Select * 
-                                    From Birds";
+                                    From Spy";
 
             // execute reader is for when we care about getting all the results of our query
             var reader = command.ExecuteReader();
+            var spies = new List<Spy>();
             // reader can hold only one row of data at a time.
+            while (reader.Read())
+            {
+                var spyObj = MapFromReader(reader);
+                spies.Add(spyObj);
 
-            var birds = new List<Bird>();
-            return _spies;
+            }
+            return spies;
         }
 
         internal Spy GetSpy(Guid spyGuid)
         {
-            return _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"Select * 
+                                    From Spy
+                                    where id = @id";
+            cmd.Parameters.AddWithValue("id", spyGuid);
+            var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapFromReader(reader);
+            }
+            else return null;
+        }
+
+        internal bool AddSkill(Guid spyGuid, string spySkill)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"Select * from SpySkills
+                                Where Description = @spySkill";
+            cmd.Parameters.AddWithValue("spySkill", spySkill);
+            var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return true;
+            }
+            return false;
         }
 
         internal IEnumerable<Spy> ListFriends(Guid spyGuid)
@@ -117,19 +149,7 @@ namespace SpyDuh.API.Repositories
 
         internal IEnumerable<Spy> ListEnemies(Guid spyGuid)
         {
-            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
             var enemiesList = new List<Spy>();
-            if (spyObj != null && spyObj.Enemies.Count > 0)
-            {
-                foreach (var enemyGuid in spyObj.Enemies)
-                {
-                    var enemyObj = _spies.FirstOrDefault(spy => spy.Id == enemyGuid);
-                    if (enemyObj != null)
-                    {
-                        enemiesList.Add(enemyObj);
-                    }
-                }
-            }
             return enemiesList;
         }
 
@@ -241,6 +261,54 @@ namespace SpyDuh.API.Repositories
                 // handler Id not found
                 returnStr.Append($"Handler with id {handlerGuid} not found");
                 return false;
+            }
+        }
+       Spy MapFromReader(SqlDataReader reader)
+        {
+            var spy = new Spy();
+            spy.Id = reader.GetGuid(0);
+            spy.Name = reader["Name"].ToString();
+            spy.Skills = new List<SpySkills>();
+            spy.Services = new List<SpyServices>();
+            UpdateSkills(spy);
+            UpdateServices(spy);
+            return spy;
+        }
+
+        internal void UpdateSkills(Spy spy)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"select SS.Description, SS.Enum from Spy S
+		                        Join SpySkillRelationship SR
+			                    on S.Id = SR.SpyId
+		                        Join SpySkills SS
+			                    on SS.Id = SR.SkillId
+                                where S.Id = @spyId";
+            cmd.Parameters.AddWithValue("spyId", spy.Id);
+            var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                spy.Skills.Add((SpySkills)reader["Enum"]);
+            }
+        }
+        internal void UpdateServices(Spy spy)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"select SS.Description, SS.Enum from Spy S
+		                        Join SpyServicesRelationship SSR
+			                    on S.Id = SSR.SpyId
+		                        Join SpyServices SS
+			                    on SS.Id = SSR.ServiceId
+                                where S.Id = @spyId";
+            cmd.Parameters.AddWithValue("spyId", spy.Id);
+            var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                spy.Services.Add((SpyServices)reader["Enum"]);
             }
         }
 

@@ -27,6 +27,33 @@ namespace SpyDuh.API.Controllers
             return Ok(_repo.GetAll());
         }
 
+        [HttpGet("{spyGuid}")]
+        public IActionResult GetSpyById(Guid spyGuid)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            StringBuilder returnStr = new StringBuilder("");
+            if (spyObj != null)
+            {
+                return Ok(spyObj);
+            }
+            returnStr.Append($"Spy with id: {spyGuid} not found\n");
+            return NotFound(returnStr.ToString());
+        }
+
+        [HttpPost("{spyBuid}/AddSkill/{spySkill}")]
+        public IActionResult AddSkill(Guid spyGuid, string spySkill)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            StringBuilder returnStr = new StringBuilder("");
+            if (spyObj != null)
+            {
+                return Ok(spyObj);
+            }
+            returnStr.Append($"Spy with id: {spyGuid} not found\n");
+            return NotFound(returnStr.ToString());
+
+        }
+
         [HttpPatch("{spyGuid}/AddFriend/{friendGuid}")]
         public IActionResult AddFriend(Guid spyGuid, Guid friendGuid)
         {
