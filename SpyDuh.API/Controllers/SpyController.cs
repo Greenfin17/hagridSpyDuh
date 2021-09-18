@@ -125,10 +125,10 @@ namespace SpyDuh.API.Controllers
             {
                 if (!spyObj.Enemies.Contains(enemyGuid))
                 {
-                    spyObj.Enemies.Add(enemyGuid);
-                    return Ok($"Enemy with ID {enemyGuid} added.\n");
+                    if (_repo.AddEnemy(spyGuid, enemyGuid)) return Ok($"Enemy {enemyObj.Name} with ID {enemyObj.Id} added.\n");
+                    else return NotFound($"Unable to add enemy with Id {enemyGuid}");
                 }
-                else return BadRequest($"Enemy with ID {enemyGuid} already in enemy list\n");
+                else return BadRequest($"Enemy {enemyObj.Name} with ID {enemyGuid} already in enemy list\n");
             }
             if (spyObj == null) returnStr.Append($"Spy with ID {spyGuid} not found\n");
             if (enemyObj == null) returnStr.Append($"Friend with ID {spyGuid} not found\n");
@@ -155,16 +155,17 @@ namespace SpyDuh.API.Controllers
         }
 
         [HttpPost("new-spy")]
-         public IActionResult AddSpy(Spy newSpy)
+         public IActionResult AddSpy(string name)
         {
-            if (string.IsNullOrEmpty(newSpy.Name))
+            if (string.IsNullOrEmpty(name))
             {
                 return BadRequest("Name needed");
             }
 
-            _repo.Add(newSpy);
+            Spy spyObj = new Spy();
 
-            return Created("/api/spies/1", newSpy);
+            if (_repo.AddSpy(name, spyObj)) return Created($"/api/spies/{spyObj.Id}", spyObj);
+            else return BadRequest($"Unable to add spy with name {name}");
         }
 
         [HttpGet("skills/{skill}")]

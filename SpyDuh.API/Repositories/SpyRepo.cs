@@ -178,10 +178,34 @@ namespace SpyDuh.API.Repositories
             return returnVal;
         }
 
+        internal bool AddEnemy(Guid spyId, Guid enemyId)
+        {
+            bool returnVal = false;
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"Insert into SpyEnemiesRelationship(SpyId, SpyEnemyId)
+                                Values(@spyId, @enemyId)";
+            cmd.Parameters.AddWithValue("spyId", spyId);
+            cmd.Parameters.AddWithValue("enemyId", enemyId);
+            var result = cmd.ExecuteNonQuery();
+            if (result == 1) returnVal = true;
+            return returnVal;
+        }
+
         internal IEnumerable<Spy> ListEnemies(Guid spyGuid)
         {
-            var enemiesList = new List<Spy>();
-            return enemiesList;
+            var enemyList = new List<Spy>();
+            var spyObj = GetSpy(spyGuid);
+            if(spyObj != null && spyObj.Enemies.Count > 0)
+            {
+                foreach (var enemyGuid in spyObj.Enemies)
+                {
+                    var enemyObj = GetSpy(enemyGuid);
+                    enemyList.Add(enemyObj);
+                }
+            }
+            return enemyList;
         }
 
         internal String ListSkillsAndServices(Guid spyGuid)
@@ -240,15 +264,24 @@ namespace SpyDuh.API.Repositories
             }
             return friendList;
         }
-        internal void Add(Spy newSpy)
+        internal bool AddSpy(string spyName, Spy newSpy)
         {
-            newSpy.Id = Guid.NewGuid();
-            newSpy.Friends.Clear();
-            newSpy.Enemies.Clear();
-            newSpy.Handlers.Clear();
-
-            _spies.Add(newSpy);
+            bool returnVal = false;
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"insert into Spy (Name)
+                                output inserted.*
+                                values(@spyName)";
+            cmd.Parameters.AddWithValue("spyName", spyName);
+            var result = cmd.ExecuteReader();
+            if (result.Read()){
+                newSpy = GetSpy((Guid) result["Id"]);
+                returnVal = true;
+            }
+            return returnVal;
         }
+
 
         internal IEnumerable<Spy> GetBySkills(string skill)
         {
@@ -294,7 +327,9 @@ namespace SpyDuh.API.Repositories
                 return false;
             }
         }
-       Spy MapFromReader(SqlDataReader reader)
+
+        #region Mapping
+        Spy MapFromReader(SqlDataReader reader)
         {
             var spy = new Spy();
             spy.Id = reader.GetGuid(0);
@@ -302,9 +337,11 @@ namespace SpyDuh.API.Repositories
             spy.Skills = new List<SpySkills>();
             spy.Services = new List<SpyServices>();
             spy.Friends = new List<Guid>();
+            spy.Enemies = new List<Guid>();
             UpdateSkills(spy);
             UpdateServices(spy);
             UpdateFriends(spy);
+            UpdateEnemies(spy);
             return spy;
         }
 
@@ -315,9 +352,9 @@ namespace SpyDuh.API.Repositories
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"select SS.Description, SS.Enum from Spy S
 		                        Join SpySkillRelationship SR
-			                    on S.Id = SR.SpyId
+			                        on S.Id = SR.SpyId
 		                        Join SpySkills SS
-			                    on SS.Id = SR.SkillId
+			                        on SS.Id = SR.SkillId
                                 where S.Id = @spyId";
             cmd.Parameters.AddWithValue("spyId", spy.Id);
             var reader = cmd.ExecuteReader();
@@ -334,10 +371,10 @@ namespace SpyDuh.API.Repositories
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"select SS.Description, SS.Enum from Spy S
 		                        Join SpyServicesRelationship SSR
-			                    on S.Id = SSR.SpyId
+			                        on S.Id = SSR.SpyId
 		                        Join SpyServices SS
-			                    on SS.Id = SSR.ServiceId
-                                where S.Id = @spyId";
+			                        on SS.Id = SSR.ServiceId
+                                Where S.Id = @spyId";
             cmd.Parameters.AddWithValue("spyId", spy.Id);
             var reader = cmd.ExecuteReader();
             if (reader.HasRows) spy.Services.Clear();
@@ -354,9 +391,9 @@ namespace SpyDuh.API.Repositories
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"select SF.Id as [Friend] from Spy S
 	                            Join SpyFriendRelationship SR
-		                        on S.Id = SR.SpyId
+		                            on S.Id = SR.SpyId
 	                            Join Spy SF 
-		                        on SF.Id = SR.SpyFriendId
+		                            on SF.Id = SR.SpyFriendId
                                 where S.Id = @spyId";
             cmd.Parameters.AddWithValue("spyId", spy.Id);
             var reader = cmd.ExecuteReader();
@@ -371,9 +408,9 @@ namespace SpyDuh.API.Repositories
             // -change from original model
             cmd.CommandText = @"select SF.Id as [Friend] from Spy SF
 	                            Join SpyFriendRelationship SR
-		                        on SF.Id = SR.SpyId
+		                            on SF.Id = SR.SpyId
 	                            Join Spy S
-		                        on S.Id = SR.SpyFriendId
+		                            on S.Id = SR.SpyFriendId
                                 where S.Id = @spyId";
             var reader2 = cmd.ExecuteReader();
             while (reader2.Read())
@@ -382,5 +419,25 @@ namespace SpyDuh.API.Repositories
             }
             connection.Dispose();
         }
+        internal void UpdateEnemies(Spy spy)
+        {
+            var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"Select SE.id as [Enemy] from Spy S
+                            	Join SpyEnemiesRelationship SR
+                                    on S.Id = SR.SpyId
+	                            Join Spy SE
+		                            on SE.Id = SR.SpyEnemyId
+                                Where S.id = @spyId";
+            cmd.Parameters.AddWithValue("spyId", spy.Id);
+            var reader = cmd.ExecuteReader();
+            spy.Enemies.Clear();
+            while (reader.Read())
+            {
+                spy.Enemies.Add((Guid)reader["Enemy"]);
+            }
+        }
+        #endregion
     }
 }
