@@ -50,7 +50,7 @@ namespace SpyDuh.API.Controllers
                 return Ok($"Added skill {spySkill} to spy {spyObj.Name}");
             }
             else if (spyObj == null) returnStr.Append($"Spy with id: {spyGuid} not found\n");
-            else  returnStr.Append($"Spy skill {spySkill} not found\n");
+            else  returnStr.Append($"Spy skill {spySkill} not found or already in list.\n");
             
             return NotFound(returnStr.ToString());
 
@@ -66,8 +66,8 @@ namespace SpyDuh.API.Controllers
             {
                 if (!spyObj.Friends.Contains(friendGuid))
                 {
-                    spyObj.Friends.Add(friendGuid);
-                    return Ok($"Friend {friendObj.Name} with Id {friendGuid} added.\n");
+                    if (_repo.AddFriend(spyGuid, friendGuid)) return Ok($"Friend {friendObj.Name} with Id {friendGuid} added.\n");
+                    else return NotFound($"Unable to add friend with id {friendGuid}");
                 }
                 else return BadRequest($"Friend {friendObj.Name} with Id: {friendGuid} is already in the friend list\n");
             }

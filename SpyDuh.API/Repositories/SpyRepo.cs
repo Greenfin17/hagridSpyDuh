@@ -129,6 +129,7 @@ namespace SpyDuh.API.Repositories
                 cmd.Parameters.AddWithValue("spyId", spy.Id);
                 cmd.Parameters.AddWithValue("skillId", skillGuid);
                 var reader2 = cmd.ExecuteReader();
+                // check if the skill is already listed for this spy.
                 if (!reader2.Read())
                 {
                     reader2.Close();
@@ -144,7 +145,7 @@ namespace SpyDuh.API.Repositories
 
         internal IEnumerable<Spy> ListFriends(Guid spyGuid)
         {
-            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            var spyObj = GetSpy(spyGuid);
             var friendList = new List<Spy>();
             if (spyObj != null && spyObj.Friends.Count > 0)
             {
@@ -152,7 +153,7 @@ namespace SpyDuh.API.Repositories
                 // and add them to a list.
                 foreach (var friendGuid in spyObj.Friends)
                 {
-                    var friendObj = _spies.FirstOrDefault(spy => spy.Id == friendGuid);
+                    var friendObj = GetSpy(friendGuid);
                     if (friendObj != null)
                     {
                         friendList.Add(friendObj);
@@ -160,6 +161,21 @@ namespace SpyDuh.API.Repositories
                 }
             }
             return friendList;
+        }
+
+        internal bool AddFriend(Guid spyId, Guid friendId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            bool returnVal = false;
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"Insert into SpyFriendRelationship(SpyId, SpyFriendId)
+                                Values(@spyId, @friendId)";
+            cmd.Parameters.AddWithValue("spyId", spyId);
+            cmd.Parameters.AddWithValue("friendId", friendId);
+            var result = cmd.ExecuteNonQuery();
+            if (result == 1) returnVal = true;
+            return returnVal;
         }
 
         internal IEnumerable<Spy> ListEnemies(Guid spyGuid)
@@ -200,7 +216,7 @@ namespace SpyDuh.API.Repositories
 
         internal IEnumerable<Spy> GetFriendsFriends(Guid spyGuid)
         {
-            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            var spyObj = GetSpy(spyGuid);
             var friendList = new List<Spy>();
             if (spyObj != null && spyObj.Friends.Count > 0)
             {
@@ -208,7 +224,7 @@ namespace SpyDuh.API.Repositories
                 foreach (var friendGuid in spyObj.Friends)
                 {
                     var tempList = new List<Spy>();
-                    var friendObj = _spies.FirstOrDefault(spy => spy.Id == friendGuid);
+                    var friendObj = GetSpy(friendGuid);
                     if (friendObj != null)
                     {
                         // get the list of the friend's friends
@@ -285,8 +301,10 @@ namespace SpyDuh.API.Repositories
             spy.Name = reader["Name"].ToString();
             spy.Skills = new List<SpySkills>();
             spy.Services = new List<SpyServices>();
+            spy.Friends = new List<Guid>();
             UpdateSkills(spy);
             UpdateServices(spy);
+            UpdateFriends(spy);
             return spy;
         }
 
@@ -329,5 +347,40 @@ namespace SpyDuh.API.Repositories
             }
         }
 
+        internal void UpdateFriends(Spy spy)
+        {
+            var connection = new SqlConnection(_connectionString);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"select SF.Id as [Friend] from Spy S
+	                            Join SpyFriendRelationship SR
+		                        on S.Id = SR.SpyId
+	                            Join Spy SF 
+		                        on SF.Id = SR.SpyFriendId
+                                where S.Id = @spyId";
+            cmd.Parameters.AddWithValue("spyId", spy.Id);
+            var reader = cmd.ExecuteReader();
+            if (reader.HasRows) spy.Friends.Clear();
+            while (reader.Read())
+            {
+                spy.Friends.Add((Guid) reader["Friend"]);
+            }
+            reader.Close();
+
+            // Add as friend anybody who has friended this spy
+            // -change from original model
+            cmd.CommandText = @"select SF.Id as [Friend] from Spy SF
+	                            Join SpyFriendRelationship SR
+		                        on SF.Id = SR.SpyId
+	                            Join Spy S
+		                        on S.Id = SR.SpyFriendId
+                                where S.Id = @spyId";
+            var reader2 = cmd.ExecuteReader();
+            while (reader2.Read())
+            {
+                spy.Friends.Add((Guid) reader2["Friend"]);
+            }
+            connection.Dispose();
+        }
     }
 }

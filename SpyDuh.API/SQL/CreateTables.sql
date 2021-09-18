@@ -34,4 +34,37 @@ join Hats h
 join Birds b
 	on b.Id = Orders.BirdId;
 
-	
+drop table IF EXISTS dbo.SpyServices
+
+CREATE TABLE dbo.SpyServices
+(
+	Id uniqueidentifier NOT NULL Primary Key default(newid()),
+	Description varchar(50) NOT NULL,
+	ENUM int NOT NULL identity(0,1)
+)
+
+DROP TABLE IF EXISTS dbo.SpyServicesRelationship
+
+CREATE TABLE dbo.SpyServicesRelationship
+(
+	Id uniqueidentifier NOT NULL Primary Key default(newid()),
+	SpyId uniqueidentifier NOT NULL,
+	ServiceId uniqueidentifier NOT NULL,
+	CONSTRAINT FK_SpyId_SpyServices FOREIGN KEY (SpyId)
+       REFERENCES dbo.Spy (Id),
+	CONSTRAINT FK_ServiceId_SpyServices FOREIGN KEY (ServiceId)
+       REFERENCES dbo.SpyServices (Id)
+)
+
+DROP TABLE IF EXISTS dbo.SpyFriendRelationship;
+
+CREATE TABLE dbo.SpyFriendRelationship
+(
+	Id uniqueidentifier NOT NULL Primary Key default(newid()),
+	SpyId uniqueidentifier NOT NULL,
+	SpyFriendId uniqueidentifier NOT NULL,
+	CONSTRAINT FK_SpyId_SpyFriends FOREIGN KEY (SpyId)
+       REFERENCES dbo.Spy (Id),
+	CONSTRAINT FK_SpyFriend_SpyFriends FOREIGN KEY (SpyFriendId)
+       REFERENCES dbo.Spy (Id)
+)
