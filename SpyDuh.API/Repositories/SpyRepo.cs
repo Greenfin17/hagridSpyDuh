@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.SqlClient;
+using Dapper;
 
 namespace SpyDuh.API.Repositories
 {
@@ -264,21 +265,34 @@ namespace SpyDuh.API.Repositories
             }
             return friendList;
         }
-        internal bool AddSpy(string spyName, Spy newSpy)
+        internal bool AddSpy(Spy newSpy)
         {
             bool returnVal = false;
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = @"insert into Spy (Name)
+            using var db = new SqlConnection(_connectionString);
+            // design of app requires the following to be added separately
+            newSpy.Skills.Clear();
+            newSpy.Services.Clear();
+            newSpy.Friends.Clear();
+            newSpy.Enemies.Clear();
+            newSpy.Handlers.Clear();
+            db.Open();
+            var sql = @"insert into Spy (Name)
                                 output inserted.*
-                                values(@spyName)";
-            cmd.Parameters.AddWithValue("spyName", spyName);
-            var result = cmd.ExecuteReader();
+                                values(@Name)";
+            // adonet code 
+            // cmd.Parameters.AddWithValue("spyName", spyName);
+            var id = db.ExecuteScalar<Guid>(sql, newSpy);
+            var oldId = newSpy.Id;
+            newSpy.Id = id;
+            if (newSpy.Id != oldId) returnVal = true;
+            
+            /* adonet version             
+           var result = cmd.ExecuteReader();
             if (result.Read()){
                 newSpy = GetSpy((Guid) result["Id"]);
                 returnVal = true;
             }
+            */
             return returnVal;
         }
 

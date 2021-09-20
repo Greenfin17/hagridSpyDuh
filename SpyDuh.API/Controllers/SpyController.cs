@@ -155,17 +155,15 @@ namespace SpyDuh.API.Controllers
         }
 
         [HttpPost("new-spy")]
-         public IActionResult AddSpy(string name)
+         public IActionResult AddSpy(Spy newSpy)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(newSpy.Name))
             {
                 return BadRequest("Name needed");
             }
 
-            Spy spyObj = new Spy();
-
-            if (_repo.AddSpy(name, spyObj)) return Created($"/api/spies/{spyObj.Id}", spyObj);
-            else return BadRequest($"Unable to add spy with name {name}");
+            if (_repo.AddSpy(newSpy)) return Created($"/api/spies/{newSpy.Id}", newSpy);
+            else return BadRequest($"Unable to add spy with name {newSpy.Name}");
         }
 
         [HttpGet("skills/{skill}")]
