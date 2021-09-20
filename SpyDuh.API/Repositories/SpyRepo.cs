@@ -265,16 +265,21 @@ namespace SpyDuh.API.Repositories
             }
             return friendList;
         }
-        internal bool AddSpy(Spy newSpy)
+        internal bool AddSpy(ref Spy newSpy)
         {
             bool returnVal = false;
             using var db = new SqlConnection(_connectionString);
             // design of app requires the following to be added separately
-            newSpy.Skills.Clear();
-            newSpy.Services.Clear();
-            newSpy.Friends.Clear();
-            newSpy.Enemies.Clear();
-            newSpy.Handlers.Clear();
+            if (newSpy.Skills == null) newSpy.Skills = new List<SpySkills>();
+            else newSpy.Skills.Clear();
+            if (newSpy.Services == null) newSpy.Services = new List<SpyServices>();
+            else newSpy.Services.Clear();
+            if (newSpy.Friends == null) newSpy.Friends = new List<Guid>();
+            else newSpy.Friends.Clear();
+            if (newSpy.Enemies == null) newSpy.Enemies = new List<Guid>();
+            else newSpy.Enemies.Clear();
+            if (newSpy.Handlers == null) newSpy.Handlers = new List<Guid>();
+            else newSpy.Handlers.Clear();
             db.Open();
             var sql = @"insert into Spy (Name)
                                 output inserted.*
