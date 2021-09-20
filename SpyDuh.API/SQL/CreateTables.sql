@@ -68,3 +68,19 @@ CREATE TABLE dbo.SpyFriendRelationship
 	CONSTRAINT FK_SpyFriend_SpyFriends FOREIGN KEY (SpyFriendId)
        REFERENCES dbo.Spy (Id)
 )
+
+DROP TABLE IF EXISTS dbo.SpyEnemiesRelationship;
+
+CREATE TABLE dbo.SpyEnemiesRelationship
+(
+	Id uniqueidentifier NOT NULL Primary Key default(newid()),
+	SpyId uniqueidentifier NOT NULL,
+	SpyEnemyId uniqueidentifier NOT NULL,
+	CONSTRAINT FK_SpyId_SpyEnemies FOREIGN KEY (SpyId)
+       REFERENCES dbo.Spy (Id),
+	CONSTRAINT FK_SpyEnemy_SpyEnemies FOREIGN KEY (SpyEnemyId)
+       REFERENCES dbo.Spy (Id)
+)
+describe tables;
+
+

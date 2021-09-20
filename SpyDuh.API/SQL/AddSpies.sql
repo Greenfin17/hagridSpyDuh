@@ -4,3 +4,8 @@ values('James Bond'),
 		('Vadim Kirpichenko'),
 		('Whitaker Chambers'),
 		('Jona von Ustinov');
+
+insert into Spy (Name)
+	output inserted.*
+    values('John Croft');
+	
