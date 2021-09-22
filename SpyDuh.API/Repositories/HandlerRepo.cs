@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace SpyDuh.API.Repositories
 {
@@ -28,6 +29,12 @@ namespace SpyDuh.API.Repositories
                 AgencyName = "Z's Agency",
             }
         };
+
+        readonly string _connectionString;
+        public HandlerRepo(IConfiguration config)
+        {
+            _connectionString = config.GetConnectionString("SpyDuh");
+        }
 
         internal IEnumerable<Handler> GetAll()
         {

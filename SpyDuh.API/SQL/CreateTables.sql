@@ -83,4 +83,10 @@ CREATE TABLE dbo.SpyEnemiesRelationship
 )
 describe tables;
 
+DROP TABLE IF EXISTS dbo.Handlers;
 
+CREATE TABLE dbo.Handlers(
+	ID uniqueidentifier NOT NULL Primary Key default(newid()),
+	Name varchar(50) NOT NULL,
+	AgencyName varchar(50) NOT NULL
+)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using Dapper;
 
 namespace SpyDuh.API.Repositories
@@ -67,9 +68,14 @@ namespace SpyDuh.API.Repositories
                 Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
             }
         }; 
-        HandlerRepo _handlers = new HandlerRepo();
+        HandlerRepo _handlers;
 
-        const string _connectionString = "Server = localhost; Database = SpyDuh; Trusted_Connection = True";
+        readonly string _connectionString;
+        public SpyRepo(IConfiguration config)
+        {
+            _connectionString = config.GetConnectionString("SpyDuh");
+            _handlers = new HandlerRepo(config);
+        }
         internal IEnumerable<Spy> GetAll()
         {
             using var connection = new SqlConnection(_connectionString);
@@ -211,7 +217,7 @@ namespace SpyDuh.API.Repositories
 
         internal String ListSkillsAndServices(Guid spyGuid)
         {
-            var spyObj = _spies.FirstOrDefault(spy => spy.Id == spyGuid);
+            var spyObj = GetSpy(spyGuid);
             StringBuilder output = new StringBuilder();
             if (spyObj != null)
             {
@@ -302,12 +308,25 @@ namespace SpyDuh.API.Repositories
         }
 
 
-        internal IEnumerable<Spy> GetBySkills(string skill)
+        internal IEnumerable<Spy> GetBySkills(string spySkill)
         {
             SpySkills skillEnum;
-            if (Enum.TryParse(skill, out skillEnum))
+            if (Enum.TryParse(spySkill, out skillEnum))
             {
-                return _spies.Where(spy => spy.Skills.Contains(skillEnum));
+                var db = new SqlConnection(_connectionString);
+                var sql = @"select SP.* from SpySkillRelationship SKR
+                              Join Spy SP
+                                on SP.Id = SKR.SpyId
+                              Join SpySkills SK
+                                on SK.Id = SKR.SkillId
+                              Where SK.Description = @skill";
+                var result = db.Query<Spy>(sql, new { skill = spySkill });
+                foreach (var spy in result)
+                {
+                    AddLists(spy);
+                    UpdateSpyLists(spy);
+                }
+                return result;
             }
             else return Enumerable.Empty<Spy>();
         }
@@ -362,6 +381,22 @@ namespace SpyDuh.API.Repositories
             UpdateFriends(spy);
             UpdateEnemies(spy);
             return spy;
+        }
+
+        internal void UpdateSpyLists(Spy spy)
+        {
+            UpdateSkills(spy);
+            UpdateServices(spy);
+            UpdateFriends(spy);
+            UpdateEnemies(spy);
+        }
+
+        internal void AddLists(Spy spy)
+        {
+            if (spy.Skills == null) spy.Skills = new List<SpySkills>();
+            if (spy.Services == null) spy.Services= new List<SpyServices>();
+            if (spy.Friends == null) spy.Friends = new List<Guid>();
+            if (spy.Enemies == null) spy.Enemies = new List<Guid>();
         }
 
         internal void UpdateSkills(Spy spy)

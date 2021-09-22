@@ -17,10 +17,10 @@ namespace SpyDuh.API.Controllers
         HandlerRepo _repo;
         SpyRepo _spies;
 
-        public HandlerController()
+        public HandlerController(HandlerRepo handlerRepo, SpyRepo spyRepo)
         {
-            _repo = new HandlerRepo();
-            _spies = new SpyRepo();
+            _repo = handlerRepo;
+            _spies = spyRepo;
         }
 
         [HttpGet]

@@ -16,9 +16,9 @@ namespace SpyDuh.API.Controllers
     {
         SpyRepo _repo;
 
-        public SpyController()
+        public SpyController(SpyRepo spyRepo)
         {
-            _repo = new SpyRepo();
+            _repo = spyRepo;
         }
 
         [HttpGet]
