@@ -83,10 +83,23 @@ CREATE TABLE dbo.SpyEnemiesRelationship
 )
 describe tables;
 
-DROP TABLE IF EXISTS dbo.Handlers;
+DROP TABLE IF EXISTS dbo.Handler;
 
 CREATE TABLE dbo.Handler(
-	ID uniqueidentifier NOT NULL Primary Key default(newid()),
+	Id uniqueidentifier NOT NULL Primary Key default(newid()),
 	Name varchar(50) NOT NULL,
 	AgencyName varchar(50) NOT NULL
+)
+
+DROP TABLE IF EXISTS dbo.HandlerSpyRelationship
+
+CREATE TABLE dbo.HandlerSpyRelationship
+(
+	Id uniqueidentifier NOT NULL Primary Key default(newid()),
+	HandlerId uniqueidentifier NOT NULL,
+	SpyId uniqueidentifier NOT NULL,
+	CONSTRAINT FK_HandlerSpy_Handler FOREIGN KEY (HandlerId)
+       REFERENCES dbo.Handler (Id),
+	CONSTRAINT FK_HandlerSpy_Spy FOREIGN KEY (SpyId)
+       REFERENCES dbo.Spy (Id)
 )

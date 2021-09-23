@@ -11,63 +11,6 @@ namespace SpyDuh.API.Repositories
 {
     public class SpyRepo
     {
-      static List<Spy> _spies = new List<Spy>
-        {
-
-            new Spy
-            {
-                Name = "James Bond",
-                Id = new Guid("6b1d5e06-ff21-45d8-a66c-45788bbfd387"),
-                Skills = new List<SpySkills> {SpySkills.Alcoholic, SpySkills.Charisma, SpySkills.Seduction, SpySkills.DefensiveDriving},
-                Services = new List<SpyServices> {SpyServices.SaveTheWorld, SpyServices.IntelligenceGathering},
-                // Friends with Pierre and Vadim
-                Friends = new List<Guid> {new Guid("8120e025-e534-4ff7-8722-e09bb478281f"), new Guid("1359b3a6-dc47-4a9b-b50f-10ad8739653b")},
-                Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {new Guid("626c99be-a979-4d56-ba8b-3353e4165145")}
-            },
-             new Spy
-            {
-                Name = "Pierre LaKlutz",
-                Id = new Guid("8120e025-e534-4ff7-8722-e09bb478281f"),
-                Skills = new List<SpySkills> {SpySkills.Dancing, SpySkills.Disguises, SpySkills.Fencing,SpySkills.MicrosoftExcel},
-                Services = new List<SpyServices> {SpyServices.Dossier, SpyServices.Theft},
-                // Friends with Vadim and Whittaker
-                Friends = new List<Guid> {new Guid("57351a82-65f8-4518-a49a-c62a87134af3"), new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6")},
-                Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {new Guid("626c99be-a979-4d56-ba8b-3353e4165145")}
-            },
-             new Spy
-            {
-                Name = "Vadim Kirpichenko",
-                Id = new Guid("1359b3a6-dc47-4a9b-b50f-10ad8739653b"),
-                Skills = new List<SpySkills> {SpySkills.Alcoholic, SpySkills.DefensiveDriving, SpySkills.Hacker, SpySkills.Interrogation},
-                Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
-                // Friends with Jona
-                Friends = new List<Guid> {new Guid("626c99be-a979-4d56-ba8b-3353e4165145")},
-                Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {new Guid("3732f2d5-3291-4494-8470-f6e7f719efde")}
-            },
-             new Spy
-            {
-                Name = "Whittaker Chambers",
-                Id = new Guid("57351a82-65f8-4518-a49a-c62a87134af3"),
-                Skills = new List<SpySkills> {SpySkills.Languages, SpySkills.DefensiveDriving, SpySkills.Forgery, SpySkills.Interrogation},
-                Services = new List<SpyServices> {SpyServices.Framing, SpyServices.IntelligenceGathering},
-                Friends = new List<Guid> {},
-                Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
-            },
-             new Spy
-            {
-                Name = "Jona von Ustinov",
-                Id = new Guid("d296f36f-bd32-427f-bc07-a111e5c055e6"),
-                Skills = new List<SpySkills> {SpySkills.Languages, SpySkills.Blackjack, SpySkills.Disguises, SpySkills.Interrogation},
-                Services = new List<SpyServices> {SpyServices.IntelligenceGathering},
-                Friends = new List<Guid> {},
-                Enemies = new List<Guid> {},
-                Handlers = new List<Guid> {new Guid("ee8467a1-971a-4b4a-8af1-cd2ae5a7f197")}
-            }
-        }; 
         HandlerRepo _handlers;
 
         readonly string _connectionString;
@@ -341,18 +284,25 @@ namespace SpyDuh.API.Repositories
             if (handlerObj != null)
             {
                 // get spies associated with the handler, if any
-                var agencySpies = _spies.Where(spy => spy.Handlers.Contains(handlerGuid));
+                var db = new SqlConnection(_connectionString);
+                var sql = @"Select S.Name from HandlerSpyRelationship HSR
+                                Join Handler H
+                                    on H.Id = HSR.HandlerId
+                                Join Spy S
+                                    on S.Id = HSR.SpyId
+                                Where H.Id = @handlerGuid";
+                var agencySpies = db.Query<String>(sql, new { handlerGuid });
+
                 if (agencySpies.Count() > 0)
                 {
-                    // temporary list to store spy names
-                    var agencySpiesByName = new List<string>();
                     // return message
                     returnStr.Append($"Spies for {handlerObj.Name}:\n");
-                    // add names of spies to list
-                    agencySpiesByName.AddRange(from spy in agencySpies
-                                               select spy.Name);
+
                     // copy list to return message
-                    agencySpiesByName.ForEach(spy => returnStr.Append($"{spy}\n"));
+                    foreach (var spy in agencySpies)
+                    {
+                        returnStr.Append($"{spy}\n");
+                    }
                 }
                 // no spies found
                 else returnStr.Append($"{handlerObj.Name} has no spies currently.");

@@ -38,7 +38,6 @@ namespace SpyDuh.API.Repositories
         internal bool Add(Handler newHandler)
         {
             bool returnVal = false;
-            var origId = newHandler.Id;
             var db = new SqlConnection(_connectionString);
             var sql = @"Insert into Handler ( Name, AgencyName )
                         output inserted.*
@@ -48,6 +47,22 @@ namespace SpyDuh.API.Repositories
             if ( result != null)
             {
                 newHandler.Id = result.Id;
+                returnVal = true;
+            }
+            return returnVal;
+        }
+
+        internal bool AddSpyToHandler(Handler handler, Spy spy)
+        {
+            bool returnVal = false;
+            var db = new SqlConnection(_connectionString);
+            var sql = @"Insert into HandlerSpyRelationship (HandlerId, SpyId)
+                        output inserted.*
+                        Values (@handlerId, @spyId)";
+            var result = db.ExecuteScalar<Guid>(sql, new { handlerId = handler.Id, spyId = spy.Id });
+            // test that the row was added
+            if (result != new Guid())
+            {
                 returnVal = true;
             }
             return returnVal;
