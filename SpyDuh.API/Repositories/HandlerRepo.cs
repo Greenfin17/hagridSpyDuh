@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Data.SqlClient;
+using Dapper;
 
 namespace SpyDuh.API.Repositories
 {
@@ -38,18 +40,38 @@ namespace SpyDuh.API.Repositories
 
         internal IEnumerable<Handler> GetAll()
         {
-            return _handlers;
+            var db = new SqlConnection(_connectionString);
+            var sql = @"Select * from Handler";
+            var handlers = db.Query<Handler>(sql);
+            return handlers;
         }
 
-        internal Handler GetHandler(Guid handlerGuid)
+        internal Handler GetHandlerById(Guid handlerGuid)
         {
-            return _handlers.FirstOrDefault(handler => handler.Id == handlerGuid);
+
+            var db = new SqlConnection(_connectionString);
+            var sql = @"Select * from Handler
+                        Where Id = @handlerGuid";
+            var handler = db.QueryFirstOrDefault<Handler>(sql, new { handlerGuid });
+            return handler;
         }
         
-        internal void Add(Handler newHandler)
+        internal bool Add(Handler newHandler)
         {
-            newHandler.Id = Guid.NewGuid();
-            _handlers.Add(newHandler);
+            bool returnVal = false;
+            var origId = newHandler.Id;
+            var db = new SqlConnection(_connectionString);
+            var sql = @"Insert into Handler ( Name, AgencyName )
+                        output inserted.*
+	                    Values(@Name, @AgencyName)";
+
+            var result = db.QueryFirstOrDefault<Handler>(sql, newHandler);
+            if ( result != null)
+            {
+                newHandler.Id = result.Id;
+                returnVal = true;
+            }
+            return returnVal;
         }
     }
 }

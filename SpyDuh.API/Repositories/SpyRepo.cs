@@ -335,7 +335,7 @@ namespace SpyDuh.API.Repositories
         internal bool GetByHandler(Guid handlerGuid, StringBuilder returnStr)
         {
             // get the full handler object
-            var handlerObj = _handlers.GetHandler(handlerGuid);
+            var handlerObj = _handlers.GetHandlerById(handlerGuid);
 
             // test for valid handler Guid
             if (handlerObj != null)
@@ -436,6 +436,7 @@ namespace SpyDuh.API.Repositories
             {
                 spy.Services.Add((SpyServices)reader["Enum"]);
             }
+            connection.Dispose();
         }
 
         internal void UpdateFriends(Spy spy)
@@ -475,7 +476,7 @@ namespace SpyDuh.API.Repositories
         }
         internal void UpdateEnemies(Spy spy)
         {
-            var connection = new SqlConnection(_connectionString);
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"Select SE.id as [Enemy] from Spy S

@@ -26,7 +26,23 @@ namespace SpyDuh.API.Controllers
         [HttpGet]
         public IActionResult GetAllHandlers()
         {
-            return Ok(_repo.GetAll());
+            var spyList = _repo.GetAll();
+            if (spyList.Count() == 0)
+            {
+                return NotFound("No handlers in database.");
+            }
+            else return Ok(spyList);
+        }
+
+        [HttpGet("{handlerGuid}")]
+        public IActionResult GetHandlerById(Guid handlerGuid)
+        {
+            var handler = _repo.GetHandlerById(handlerGuid);
+            if (handler == null)
+            {
+                return NotFound($"Handler with Id: {handlerGuid} not found");
+            }
+            else return Ok(handler);
         }
 
 
@@ -38,9 +54,12 @@ namespace SpyDuh.API.Controllers
                 return BadRequest("Handler name required");
             }
 
-            _repo.Add(newHandler);
+            if (_repo.Add(newHandler))
+            {
+                return Created($"/api/handler/{newHandler.Id}", newHandler);
+            }
+            else return BadRequest($"Unable to add Handler with name {newHandler.Name}");
 
-            return Created("/api/handlers/1", newHandler);
         }
 
         [HttpGet("{handlerGuid}/ListAgencySpies")]
