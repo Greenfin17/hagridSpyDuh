@@ -16,15 +16,44 @@ namespace SpyDuh.API.Controllers
     {
         SpyRepo _repo;
 
-        public SpyController()
+        public SpyController(SpyRepo spyRepo)
         {
-            _repo = new SpyRepo();
+            _repo = spyRepo;
         }
 
         [HttpGet]
         public IActionResult GetAllSpies()
         {
             return Ok(_repo.GetAll());
+        }
+
+        [HttpGet("{spyGuid}")]
+        public IActionResult GetSpyById(Guid spyGuid)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            StringBuilder returnStr = new StringBuilder("");
+            if (spyObj != null)
+            {
+                return Ok(spyObj);
+            }
+            returnStr.Append($"Spy with id: {spyGuid} not found\n");
+            return NotFound(returnStr.ToString());
+        }
+
+        [HttpPatch("{spyGuid}/AddSkill/{spySkill}")]
+        public IActionResult AddSkill(Guid spyGuid, string spySkill)
+        {
+            var spyObj = _repo.GetSpy(spyGuid);
+            StringBuilder returnStr = new StringBuilder("");
+            if (spyObj != null && _repo.AddSkill(spyObj, spySkill))
+            {
+                return Ok($"Added skill {spySkill} to spy {spyObj.Name}");
+            }
+            else if (spyObj == null) returnStr.Append($"Spy with id: {spyGuid} not found\n");
+            else  returnStr.Append($"Spy skill {spySkill} not found or already in list.\n");
+            
+            return NotFound(returnStr.ToString());
+
         }
 
         [HttpPatch("{spyGuid}/AddFriend/{friendGuid}")]
@@ -37,8 +66,8 @@ namespace SpyDuh.API.Controllers
             {
                 if (!spyObj.Friends.Contains(friendGuid))
                 {
-                    spyObj.Friends.Add(friendGuid);
-                    return Ok($"Friend {friendObj.Name} with Id {friendGuid} added.\n");
+                    if (_repo.AddFriend(spyGuid, friendGuid)) return Ok($"Friend {friendObj.Name} with Id {friendGuid} added.\n");
+                    else return NotFound($"Unable to add friend with id {friendGuid}");
                 }
                 else return BadRequest($"Friend {friendObj.Name} with Id: {friendGuid} is already in the friend list\n");
             }
@@ -96,10 +125,10 @@ namespace SpyDuh.API.Controllers
             {
                 if (!spyObj.Enemies.Contains(enemyGuid))
                 {
-                    spyObj.Enemies.Add(enemyGuid);
-                    return Ok($"Enemy with ID {enemyGuid} added.\n");
+                    if (_repo.AddEnemy(spyGuid, enemyGuid)) return Ok($"Enemy {enemyObj.Name} with ID {enemyObj.Id} added.\n");
+                    else return NotFound($"Unable to add enemy with Id {enemyGuid}");
                 }
-                else return BadRequest($"Enemy with ID {enemyGuid} already in enemy list\n");
+                else return BadRequest($"Enemy {enemyObj.Name} with ID {enemyGuid} already in enemy list\n");
             }
             if (spyObj == null) returnStr.Append($"Spy with ID {spyGuid} not found\n");
             if (enemyObj == null) returnStr.Append($"Friend with ID {spyGuid} not found\n");
@@ -126,16 +155,16 @@ namespace SpyDuh.API.Controllers
         }
 
         [HttpPost("new-spy")]
-         public IActionResult AddSpy(Spy newSpy)
+         public IActionResult AddSpy(string name)
         {
-            if (string.IsNullOrEmpty(newSpy.Name))
+            Spy newSpy = new Spy();
+            if (string.IsNullOrEmpty(name))
             {
                 return BadRequest("Name needed");
             }
-
-            _repo.Add(newSpy);
-
-            return Created("/api/spies/1", newSpy);
+            newSpy.Name = name;
+            if (_repo.AddSpy(ref newSpy)) return Created($"/api/spy/{newSpy.Id}", newSpy);
+            else return BadRequest($"Unable to add spy with name {newSpy.Name}");
         }
 
         [HttpGet("skills/{skill}")]
