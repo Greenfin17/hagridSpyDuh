@@ -409,27 +409,25 @@ namespace SpyDuh.API.Repositories
             var results2 = db.Query<Guid>(sql2, new { spyId = spy.Id });
             if (results2.Count() > 0)
             {
-                spy.Friends.AddRange(results2);
+                // Add the friend if they are not already in the list
+                spy.Friends.AddRange(results2.Except(spy.Friends));
             }
 
         }
         internal void UpdateEnemies(Spy spy)
         {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = @"Select SE.id as [Enemy] from Spy S
+            using var db = new SqlConnection(_connectionString);
+            var sql = @"Select SE.id as [Enemy] from Spy S
                             	Join SpyEnemiesRelationship SR
                                     on S.Id = SR.SpyId
 	                            Join Spy SE
 		                            on SE.Id = SR.SpyEnemyId
                                 Where S.id = @spyId";
-            cmd.Parameters.AddWithValue("spyId", spy.Id);
-            var reader = cmd.ExecuteReader();
+            var results = db.Query<Guid>(sql, new { spyId = spy.Id });
             spy.Enemies.Clear();
-            while (reader.Read())
+            if( results.Count() > 0)
             {
-                spy.Enemies.Add((Guid)reader["Enemy"]);
+                spy.Enemies.AddRange(results);
             }
         }
         #endregion
