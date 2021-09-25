@@ -351,78 +351,67 @@ namespace SpyDuh.API.Repositories
 
         internal void UpdateSkills(Spy spy)
         {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = @"select SS.Description, SS.Enum from Spy S
+            using var db = new SqlConnection(_connectionString);
+            var sql = @"select SS.Enum from Spy S
 		                        Join SpySkillRelationship SR
 			                        on S.Id = SR.SpyId
 		                        Join SpySkills SS
 			                        on SS.Id = SR.SkillId
                                 where S.Id = @spyId";
-            cmd.Parameters.AddWithValue("spyId", spy.Id);
-            var reader = cmd.ExecuteReader();
-            if (reader.HasRows) spy.Skills.Clear();
-            while (reader.Read())
+
+            var result = db.Query<Int32>(sql, new { spyId = spy.Id });
+            spy.Skills.Clear();
+            if (result.Count() > 0)
             {
-                spy.Skills.Add((SpySkills)reader["Enum"]);
+                spy.Skills.AddRange(result.Select(x => (SpySkills) x));
             }
         }
         internal void UpdateServices(Spy spy)
         {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = @"select SS.Description, SS.Enum from Spy S
+            using var db = new SqlConnection(_connectionString);
+            var sql = @"select SS.Enum from Spy S
 		                        Join SpyServicesRelationship SSR
 			                        on S.Id = SSR.SpyId
 		                        Join SpyServices SS
 			                        on SS.Id = SSR.ServiceId
                                 Where S.Id = @spyId";
-            cmd.Parameters.AddWithValue("spyId", spy.Id);
-            var reader = cmd.ExecuteReader();
-            if (reader.HasRows) spy.Services.Clear();
-            while (reader.Read())
-            {
-                spy.Services.Add((SpyServices)reader["Enum"]);
+            var result = db.Query<Int32>(sql, new { spyId = spy.Id });
+            spy.Services.Clear();
+            if (result.Count() > 0) {
+                spy.Services.AddRange(result.Select(x => (SpyServices) x));
             }
-            connection.Dispose();
         }
 
         internal void UpdateFriends(Spy spy)
         {
-            var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = @"select SF.Id as [Friend] from Spy S
+            using var db = new SqlConnection(_connectionString);
+            var sql = @"select SF.Id as [Friend] from Spy S
 	                            Join SpyFriendRelationship SR
 		                            on S.Id = SR.SpyId
 	                            Join Spy SF 
 		                            on SF.Id = SR.SpyFriendId
                                 where S.Id = @spyId";
-            cmd.Parameters.AddWithValue("spyId", spy.Id);
-            var reader = cmd.ExecuteReader();
-            if (reader.HasRows) spy.Friends.Clear();
-            while (reader.Read())
+            var results = db.Query<Guid>(sql, new { spyId = spy.Id });
+            spy.Friends.Clear();
+            if ( results.Count() > 0)
             {
-                spy.Friends.Add((Guid) reader["Friend"]);
+                spy.Friends.AddRange(results);
             }
-            reader.Close();
 
             // Add as friend anybody who has friended this spy
             // -change from original model
-            cmd.CommandText = @"select SF.Id as [Friend] from Spy SF
+            var sql2 = @"select SF.Id as [Friend] from Spy SF
 	                            Join SpyFriendRelationship SR
 		                            on SF.Id = SR.SpyId
 	                            Join Spy S
 		                            on S.Id = SR.SpyFriendId
                                 where S.Id = @spyId";
-            var reader2 = cmd.ExecuteReader();
-            while (reader2.Read())
+            var results2 = db.Query<Guid>(sql2, new { spyId = spy.Id });
+            if (results2.Count() > 0)
             {
-                spy.Friends.Add((Guid) reader2["Friend"]);
+                spy.Friends.AddRange(results2);
             }
-            connection.Dispose();
+
         }
         internal void UpdateEnemies(Spy spy)
         {
